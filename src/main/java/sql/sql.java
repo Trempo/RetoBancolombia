@@ -9,19 +9,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class sql {
-    private String db = "jdbc:mariadb://localhost:3306/evalart_reto";
     private Connection conn;
-    private PrintWriter printWriter;
+    private final PrintWriter printWriter;
+    private final ArrayList<Integer> clientesInvitados;
     public sql(PrintWriter printWriter){
+        clientesInvitados = new ArrayList<>();
         this.printWriter = printWriter;
         try {
-            conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/evalart_reto", "root", "Prometeo1177");
+            String db = "jdbc:mariadb://localhost:3306/evalart_reto";
+            conn = DriverManager.getConnection(db, "root", "Prometeo1177");
         }catch (Exception e){
             System.out.println(e.getMessage());
         }
     }
 
     public String queryBuilder(String caso){
+        String excluirYaInvitados = clientesInvitados.size()>0? " WHERE ": "";
+        for (int i = 0; i < clientesInvitados.size(); i++) {
+            if(i>0){
+                excluirYaInvitados+= " AND ";
+            }
+            excluirYaInvitados+= " client_id <> " + clientesInvitados.get(i) + " \n";
+        }
         String queryParam = "";
         String[] split = caso.split("\n");
         for (int i = 0; i < split.length; i++) {
@@ -41,19 +50,19 @@ public class sql {
                     queryParam+= " balance >= " + valor;
                     break;
                 case "RF" :
-                    queryParam+= " balance <= " + valor;
+                    queryParam+= " unicos.monto <= " + valor;
                     break;
                 default:
                     break;
             }
         }
-        Statement stmt = null;
-        String query = String.format("SELECT * FROM\n" +
+        return String.format("SELECT * FROM\n" +
                 "    (SELECT *\n" +
-                "     FROM (SELECT c.id as id, c.code as code, c.male as male, c.type as type, c.location as location, c.company as company, c.encrypt as encrypt, unicos.max as balance\n" +
+                "     FROM (SELECT c.id as id, c.code as code, c.male as male, c.type as type, c.location as location, c.company as company, c.encrypt as encrypt, unicos.monto as balance\n" +
                 "           FROM client c INNER JOIN account a on c.id = a.client_id\n" +
-                "                         INNER JOIN (SELECT SUM(balance) as max, client_id, id\n" +
+                "                         INNER JOIN (SELECT SUM(balance) as monto, client_id, id\n" +
                 "                                     FROM account\n" +
+                "                                     %s \n" +
                 "                                     GROUP BY client_id) unicos ON unicos.id = a.id\n" +
                 "           WHERE %s \n" +
                 "           GROUP BY company) t\n" +
@@ -63,10 +72,11 @@ public class sql {
                 ") hombres\n" +
                 "UNION\n" +
                 "    (SELECT *\n" +
-                "     FROM (SELECT c.id as id, c.code as code, c.male as male, c.type as type, c.location as location, c.company as company, c.encrypt as encrypt, unicos.max as balance\n" +
+                "     FROM (SELECT c.id as id, c.code as code, c.male as male, c.type as type, c.location as location, c.company as company, c.encrypt as encrypt, unicos.monto as balance\n" +
                 "           FROM client c INNER JOIN account a on c.id = a.client_id\n" +
-                "                         INNER JOIN (SELECT SUM(balance) as max, client_id, id\n" +
+                "                         INNER JOIN (SELECT SUM(balance) as monto, client_id, id\n" +
                 "                                     FROM account\n" +
+                "                                     %s \n" +
                 "                                     GROUP BY client_id) unicos ON unicos.id = a.id\n" +
                 "           WHERE %s \n" +
                 "           GROUP BY company) t\n" +
@@ -74,8 +84,7 @@ public class sql {
                 "     ORDER BY t.balance DESC, t.code\n" +
                 "     LIMIT 4\n" +
                 ")\n" +
-                "ORDER BY balance desc;", queryParam,queryParam);
-        return query;
+                "ORDER BY balance desc, code ASC;", excluirYaInvitados,queryParam,excluirYaInvitados,queryParam);
     }
     public void generalQuery(String query){
         ArrayList<models.client> clientes = new ArrayList<>();
@@ -108,6 +117,7 @@ public class sql {
 
             }
 
+
             if(clientes.size()<4){
                 printWriter.print("CANCELADA\n");
             }else {
@@ -118,6 +128,8 @@ public class sql {
                         printWriter.print(",");
                     }
                     printWriter.print(clientes.get(i).getCode());
+                    clientesInvitados.add(clientes.get(i).getId());
+
                 }
                 printWriter.print("\n");
             }
@@ -133,7 +145,6 @@ public class sql {
         int sexoMayor = 0;
         if(mujeres>hombres){
             dif = mujeres-hombres;
-            sexoMayor = 0;
 
         }else if(hombres>mujeres){
             dif = hombres-mujeres;
@@ -154,7 +165,7 @@ public class sql {
                         min = j;
                     }
                 }
-                mapaBalances.remove(clientes.get(min));
+                mapaBalances.remove(clientes.get(min).getCode());
                 clientes.remove(clientes.get(min));
 
             }

@@ -8,7 +8,7 @@ import java.net.URL;
 
 public class decryptAPI {
     public static String decrypt(String crypt){
-        HttpURLConnection connection = null;
+        HttpURLConnection connection;
         try {
             //Create connection
             URL url = new URL("https://test.evalartapp.com/extapiquest/code_decrypt/" + crypt);

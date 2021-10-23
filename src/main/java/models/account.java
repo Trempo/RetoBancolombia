@@ -1,7 +1,13 @@
 package models;
 
+/**
+ * Objeto que modela un registro de la tabla account.
+ */
 public class account {
+    //Identificador único de la cuenta
     private int id;
+
+    //Referencia al cliente dueño de la cuenta
     private int client_id;
     private double balance;
 
