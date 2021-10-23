@@ -1,25 +1,49 @@
+import sql.sql;
+
+import java.io.*;
 import java.sql.*;
 
 public class Main {
-    public static void main( String[] args ) throws SQLException {
-        //create connection for a server installed in localhost, with a user "root" with no password
+    public static void main( String[] args ) throws SQLException, IOException {
+
+        String salida = "./io/salida.txt";
+        String entrada = "./io/entrada.txt";
+
+        // Objetos de escritura al archivo txt
+        FileWriter write = null;
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306/evalart_reto", "root", "Prometeo1177");
-            // create a Statement
-            Statement stmt = conn.createStatement();
-            ResultSet resultSet = stmt.executeQuery("SELECT * FROM account");
-            ResultSetMetaData rsmd = resultSet.getMetaData();
-            int columnsNumber = rsmd.getColumnCount();
-            while (resultSet.next()) {
-                for (int i = 1; i <= columnsNumber; i++) {
-                    if (i > 1) System.out.print(",  ");
-                    String columnValue = resultSet.getString(i);
-                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
+            write = new FileWriter(salida, false);
+            PrintWriter printWriter = new PrintWriter(write);
+            sql sql = new sql(printWriter);
+
+            File archivo = new File(entrada);
+
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(archivo));
+                String linea = reader.readLine();
+                String query = "";
+                while(linea!=null){
+                    if(linea.charAt(0)=='<'){
+                        if(!query.equals("")){
+                            sql.generalQuery(sql.queryBuilder(query));
+                            query = "";
+                        }
+                        printWriter.print(linea + "\n");
+
+                    }else{
+                        query+=linea + "\n";
+                    }
+                    linea = reader.readLine();
                 }
-                System.out.println("");
+                sql.generalQuery(sql.queryBuilder(query));
+            }catch (Exception e){
+                System.out.println(e.getMessage());
             }
-        }catch (Exception e){
-            System.out.println(e.getMessage());
+
+            printWriter.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

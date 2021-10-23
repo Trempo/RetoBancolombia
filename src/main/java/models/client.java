@@ -5,11 +5,11 @@ public class client {
     private String code;
     private int male;
     private int type;
-    private String location;
-    private String company;
+    private int location;
+    private int company;
     private int encrypt;
 
-    public client(int id, String code, int male, int type, String location, String company, int encrypt) {
+    public client(int id, String code, int male, int type, int location, int company, int encrypt) {
         this.id = id;
         this.code = code;
         this.male = male;
@@ -51,19 +51,19 @@ public class client {
         this.type = type;
     }
 
-    public String getLocation() {
+    public int getLocation() {
         return location;
     }
 
-    public void setLocation(String location) {
+    public void setLocation(int location) {
         this.location = location;
     }
 
-    public String getCompany() {
+    public int getCompany() {
         return company;
     }
 
-    public void setCompany(String company) {
+    public void setCompany(int company) {
         this.company = company;
     }
 
