@@ -6,14 +6,20 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * Clase para implementar el servicio HTTP que desencripta un código de un cliente
+ */
 public class decryptAPI {
     public static String decrypt(String crypt){
+        //Se crea la conexión como una petición GET al URL dado, concatenando el código a desencriptar.
         HttpURLConnection connection;
         try {
             //Create connection
             URL url = new URL("https://test.evalartapp.com/extapiquest/code_decrypt/" + crypt);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
+
+            //Stream del resultado
             InputStream is = connection.getInputStream();
             BufferedReader rd = new BufferedReader(new InputStreamReader(is));// or StringBuffer if Java version 5+
             String inputLine;

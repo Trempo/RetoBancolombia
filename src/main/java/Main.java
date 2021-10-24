@@ -13,7 +13,8 @@ import java.io.*;
  * cargar los datos, generar los archivos de salida y llamar las subrutinas de consultas SQL.
  *
  * La solución es reactiva a cualquier archivo de filtro o especificación de las mesas, incluso a aquellos que tengan más
- * mesas y multiples filtros.
+ * mesas y multiples filtros. Solo se tiene que alterar el archivo de entrada. Los resultados se observan en el archivo
+ * de salida. Ambos archivos están en la carpeta io del proyecto.
  *
  */
 public class Main {
